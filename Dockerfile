@@ -42,6 +42,10 @@ RUN mkdir -p /var/log/nginx && \
     touch /var/log/nginx/proxy.log && \
     chmod 666 /var/log/nginx/proxy.log
 
+# Copy start script
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+
 # Copy OpenResty config
 COPY nginx/nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
 
@@ -49,4 +53,4 @@ ENV PORT=8080
 EXPOSE ${PORT}
 
 # Start fluent-bit (from /fluent-bit/bin) and openresty
-CMD ["/bin/sh","-c","/fluent-bit/bin/fluent-bit -c /fluent-bit/etc/fluent-bit.conf & openresty -g 'daemon off;'"]
+CMD ["/bin/sh", "/start.sh"]

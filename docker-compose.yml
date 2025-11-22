@@ -8,7 +8,7 @@ services:
     restart: unless-stopped
 
   fluentbit:
-    image: fluent/fluent-bit:2.1
+    image: fluent/fluent-bit:4.2.0
     depends_on:
       - nginx-proxy
     environment:
