@@ -1,7 +1,7 @@
-# Single-container: OpenResty + Fluent Bit (build-from-source using pip-installed CMake)
+# Single-container: OpenResty + Fluent Bit (build-from-source)
 FROM openresty/openresty:1.27.1.2-bullseye
 
-# Install build deps + pip so we can get a modern CMake
+# Install build deps + pip (for modern CMake)
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
       build-essential \
@@ -17,7 +17,7 @@ RUN apt-get update && \
       bison \
       && rm -rf /var/lib/apt/lists/*
 
-# Install a modern CMake via pip (this provides a cmake binary usable by cmake build)
+# Install modern CMake via pip
 RUN pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org cmake==3.24.2
 
 # Download Fluent Bit source (v4.2.0) and extract
@@ -32,25 +32,23 @@ RUN mkdir -p /tmp/build/fluent-bit-4.2.0/build && \
     make -j$(nproc) && \
     make install
 
-# Create config dir and copy configs
+# Create Fluent Bit config directory
 RUN mkdir -p /fluent-bit/etc
+
+# Copy Fluent Bit configs
 COPY fluent-bit/fluent-bit.conf /fluent-bit/etc/fluent-bit.conf
 COPY fluent-bit/parsers.conf /fluent-bit/etc/parsers.conf
 
-# Create Nginx log directory and proxy.log file
+# Create NGINX/OpenResty log path
 RUN mkdir -p /var/log/nginx && \
     touch /var/log/nginx/proxy.log && \
     chmod 666 /var/log/nginx/proxy.log
 
-# Copy start script
-COPY start.sh /start.sh
-RUN chmod +x /start.sh
-
-# Copy OpenResty config
+# Copy NGINX/OpenResty config
 COPY nginx/nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
 
-ENV PORT=8080 
-EXPOSE ${PORT}
+# Expose internal port
+EXPOSE 8080
 
-# Start fluent-bit (from /fluent-bit/bin) and openresty
-CMD ["/bin/sh", "/start.sh"]
+# Start Fluent Bit and OpenResty
+CMD ["/bin/sh","-c","/fluent-bit/bin/fluent-bit -c /fluent-bit/etc/fluent-bit.conf & openresty -g 'daemon off;'"]
