@@ -45,7 +45,8 @@ RUN mkdir -p /var/log/nginx && \
 # Copy OpenResty config
 COPY nginx/nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
 
-EXPOSE 8080
+ENV PORT=8080 
+EXPOSE ${PORT}
 
 # Start fluent-bit (from /fluent-bit/bin) and openresty
 CMD ["/bin/sh","-c","/fluent-bit/bin/fluent-bit -c /fluent-bit/etc/fluent-bit.conf & openresty -g 'daemon off;'"]
