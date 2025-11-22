@@ -1,0 +1,20 @@
+services:
+  nginx-proxy:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./logs:/var/log/nginx
+    restart: unless-stopped
+
+  fluentbit:
+    image: fluent/fluent-bit:2.1
+    depends_on:
+      - nginx-proxy
+    environment:
+      LOGGLY_TOKEN: "${LOGGLY_TOKEN}"
+    volumes:
+      - ./logs:/var/log/nginx:ro
+      - ./fluent-bit/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf:ro
+      - ./fluent-bit/parsers.conf:/fluent-bit/etc/parsers.conf:ro
+    restart: unless-stopped
